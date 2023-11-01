@@ -1,4 +1,2 @@
 # `sortigo`
-
-# Image at sortigo.png
-![Sortigo](sortigo.png)
+![Sortigo Image](sortigo.png)
