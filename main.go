@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/michael-james-holloway/sortigo/cmd"
 	"github.com/spf13/cobra"
+
+	"github.com/michael-james-holloway/sortigo/cmd"
 )
 
 var rootCMD = &cobra.Command{

@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	localPrefixesFlagName = "local-prefixes"
-	writeFlagName         = "write"
-	diffFlagName          = "diff"
-	verboseFlagName       = "verbose"
+	localPrefixesFlagName         = "local-prefixes"
+	dontConsolidateBlocksFlagName = "dont-consolidate-blocks"
+	writeFlagName                 = "write"
+	verboseFlagName               = "verbose"
 )
 
 func init() {
@@ -22,17 +22,16 @@ func init() {
 		[]string{},
 		"Local prefix(es) to consider first party imports (e.g. github.com/michael-james-holloway/sortigo).",
 	)
+	FormatCMD.Flags().Bool(
+		dontConsolidateBlocksFlagName,
+		false,
+		"Don't consolidate existing separate blocks of the same group type (e.g. multiple third party blocks).",
+	)
 	FormatCMD.Flags().BoolP(
 		writeFlagName,
 		"w",
 		false,
 		"Write the formatted file back to the original file.",
-	)
-	FormatCMD.Flags().BoolP(
-		diffFlagName,
-		"d",
-		false,
-		"Writes diffs to stdout instead of rewriting files.",
 	)
 	FormatCMD.Flags().BoolP(
 		verboseFlagName,
@@ -55,16 +54,13 @@ var FormatCMD = &cobra.Command{
 		}
 
 		localPrefixes := must(cmd.Flags().GetStringSlice(localPrefixesFlagName))
+		dontConsolidateBlocks := must(cmd.Flags().GetBool(dontConsolidateBlocksFlagName))
 		write := must(cmd.Flags().GetBool(writeFlagName))
-		diff := must(cmd.Flags().GetBool(diffFlagName))
 		verbose := must(cmd.Flags().GetBool(verboseFlagName))
 
 		// Validate flag values.
 		if len(localPrefixes) == 0 {
 			return fmt.Errorf("no local prefixes passed")
-		}
-		if write && diff {
-			return fmt.Errorf("cannot pass both write and diff flags")
 		}
 
 		fileOrDirToFormat := args[0]
@@ -84,11 +80,11 @@ var FormatCMD = &cobra.Command{
 		}
 
 		if err := (formatter{
-			absoluteFilePaths: absoluteFilePathsToFormat,
-			localPrefixes:     localPrefixes,
-			write:             write,
-			diff:              diff,
-			verbose:           verbose,
+			absoluteFilePaths:     absoluteFilePathsToFormat,
+			localPrefixes:         localPrefixes,
+			dontConsolidateBlocks: dontConsolidateBlocks,
+			write:                 write,
+			verbose:               verbose,
 		}).run(); err != nil {
 			return fmt.Errorf("failed to run formatter: %w", err)
 		}
