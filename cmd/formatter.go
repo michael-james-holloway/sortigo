@@ -11,6 +11,7 @@ type formatter struct {
 	localPrefixes         []string
 	dontConsolidateBlocks bool
 	write                 bool
+	check                 bool
 	verbose               bool
 }
 
@@ -18,7 +19,7 @@ type formatter struct {
 func (f formatter) run() error {
 	diffFilePaths := make([]string, 0, len(f.absoluteFilePaths))
 	for _, absoluteFilePath := range f.absoluteFilePaths {
-		isDifferent, err := f.runOneFile(absoluteFilePath)
+		isDifferent, err := f.runOneFile(absoluteFilePath, !f.write && !f.check)
 		if err != nil {
 			return fmt.Errorf("failed to run formatter on file %q: %w", absoluteFilePath, err)
 		}
@@ -28,12 +29,11 @@ func (f formatter) run() error {
 	}
 
 	// If we have diffs, and we weren't in write mode, print the diffs and raise an error.
-	if len(diffFilePaths) > 0 && !f.write {
+	if f.check && len(diffFilePaths) > 0 {
 		fmt.Printf("💥 Oh no! Diffs were found in the following files:\n")
 		for _, diffFilePath := range diffFilePaths {
 			fmt.Printf("  %s\n", diffFilePath)
 		}
-		fmt.Printf("\n")
 
 		os.Exit(1)
 	}
@@ -45,14 +45,18 @@ func (f formatter) run() error {
 }
 
 // runOneFile runs the formatter on one file.
-func (f formatter) runOneFile(absoluteFilePath string) (bool, error) {
-	if f.verbose {
+func (f formatter) runOneFile(absoluteFilePath string, printFormattedFileToStdout bool) (bool, error) {
+	if f.verbose && !printFormattedFileToStdout {
 		fmt.Printf("Formatting %q...\n", absoluteFilePath)
 	}
 
 	originalFile, formattedFile, err := f.formatFile(absoluteFilePath)
 	if err != nil {
 		return false, fmt.Errorf("failed to format file %q: %w", absoluteFilePath, err)
+	}
+	if printFormattedFileToStdout {
+		fmt.Printf("%s:\n", absoluteFilePath)
+		fmt.Printf("%s\n", formattedFile)
 	}
 
 	isDifferent := bytes.Compare(originalFile, formattedFile) != 0

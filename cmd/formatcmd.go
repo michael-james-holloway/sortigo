@@ -12,6 +12,7 @@ const (
 	localPrefixesFlagName         = "local-prefixes"
 	dontConsolidateBlocksFlagName = "dont-consolidate-blocks"
 	writeFlagName                 = "write"
+	checkFlagName                 = "check"
 	verboseFlagName               = "verbose"
 )
 
@@ -32,6 +33,12 @@ func init() {
 		"w",
 		false,
 		"Write the formatted file back to the original file.",
+	)
+	FormatCMD.Flags().BoolP(
+		checkFlagName,
+		"c",
+		false,
+		"Checks if any files are different, and exits with a non-zero exit code if so.",
 	)
 	FormatCMD.Flags().BoolP(
 		verboseFlagName,
@@ -56,11 +63,15 @@ var FormatCMD = &cobra.Command{
 		localPrefixes := must(cmd.Flags().GetStringSlice(localPrefixesFlagName))
 		dontConsolidateBlocks := must(cmd.Flags().GetBool(dontConsolidateBlocksFlagName))
 		write := must(cmd.Flags().GetBool(writeFlagName))
+		check := must(cmd.Flags().GetBool(checkFlagName))
 		verbose := must(cmd.Flags().GetBool(verboseFlagName))
 
 		// Validate flag values.
 		if len(localPrefixes) == 0 {
 			return fmt.Errorf("no local prefixes passed")
+		}
+		if write && check {
+			return fmt.Errorf("cannot set both %q and %q", writeFlagName, checkFlagName)
 		}
 
 		fileOrDirToFormat := args[0]
@@ -84,6 +95,7 @@ var FormatCMD = &cobra.Command{
 			localPrefixes:         localPrefixes,
 			dontConsolidateBlocks: dontConsolidateBlocks,
 			write:                 write,
+			check:                 check,
 			verbose:               verbose,
 		}).run(); err != nil {
 			return fmt.Errorf("failed to run formatter: %w", err)
