@@ -9,53 +9,9 @@ import (
 	"go/token"
 	"sort"
 	"strings"
-
-	"github.com/spf13/cobra"
 )
 
-const (
-	localPrefixesFlagName = "local-prefixes"
-)
-
-func init() {
-	FormatCMD.Flags().StringArrayP(
-		localPrefixesFlagName,
-		"l",
-		[]string{},
-		"local prefixes to sort first",
-	)
-}
-
-var FormatCMD = &cobra.Command{
-	Use:  "format",
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return fmt.Errorf("expected 1 argument, got %d", len(args))
-		}
-
-		if err := cmd.ParseFlags(args); err != nil {
-			return fmt.Errorf("failed to parse flags: %w", err)
-		}
-
-		localPrefixes, err := cmd.Flags().GetStringArray(localPrefixesFlagName)
-		if err != nil {
-			return fmt.Errorf("failed to get local prefixes: %w", err)
-		}
-		fileToFormat := args[0]
-		
-		f, err := formatFileToString(localPrefixes, fileToFormat)
-		if err != nil {
-			return fmt.Errorf("failed to format file: %w", err)
-		}
-
-		fmt.Println(f)
-
-		return nil
-	},
-}
-
-func formatFileToString(localPrefixes []string, filePath string) (string, error) {
+func formatFile(localPrefixes []string, filePath string) (string, error) {
 	// Create a new scanner and parse the file into an AST
 	fileSet := token.NewFileSet()
 	node, err := parser.ParseFile(fileSet, filePath, nil, parser.ParseComments)
