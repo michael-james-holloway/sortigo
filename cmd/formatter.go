@@ -29,13 +29,16 @@ func (f formatter) run() error {
 
 	// If we have diffs, and we weren't in write mode, print the diffs and raise an error.
 	if len(diffFilePaths) > 0 && !f.write {
-		fmt.Printf("Oh no! Diffs were found in the following files:\n")
+		fmt.Printf("💥 Oh no! Diffs were found in the following files:\n")
 		for _, diffFilePath := range diffFilePaths {
 			fmt.Printf("  %s\n", diffFilePath)
 		}
 		fmt.Printf("\n")
 
 		os.Exit(1)
+	}
+	if len(diffFilePaths) == 0 {
+		fmt.Printf("🎉 No diffs were found!\n")
 	}
 
 	return nil
@@ -63,7 +66,8 @@ func (f formatter) runOneFile(absoluteFilePath string) (bool, error) {
 		}
 	}
 	if isDifferent && !f.write {
-		printFileDiff(originalFile, formattedFile)
+		// TODO(holloway): Re-enable once this looks better. Also gate on a flag.
+		// printFileDiff(originalFile, formattedFile)
 	}
 
 	return isDifferent, nil

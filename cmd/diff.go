@@ -12,7 +12,7 @@ import (
 // It first logs the absolute file path and then the diff.
 func printFileDiff(originalFile, formattedFile []byte) error {
 	dmp := diffmatchpatch.New()
-	diffs := dmp.DiffMain(string(originalFile), string(formattedFile), false)
+	diffs := dmp.DiffMain(string(originalFile), string(formattedFile), true)
 	fmt.Println(prettyGitDiff(diffs))
 
 	return nil
@@ -35,7 +35,6 @@ func prettyGitDiff(diffs []diffmatchpatch.Diff) string {
 func diffTexts(diffs []diffmatchpatch.Diff) []string {
 	var result []string
 	for _, diff := range diffs {
-		fmt.Println(diff)
 		text := diff.Text
 		lines := strings.Split(text, "\n")
 		for i, line := range lines {
