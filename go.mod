@@ -2,10 +2,7 @@ module github.com/michael-james-holloway/sortigo
 
 go 1.19
 
-require (
-	github.com/sergi/go-diff v1.3.1
-	github.com/spf13/cobra v1.7.0
-)
+require github.com/spf13/cobra v1.7.0
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
